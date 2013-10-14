@@ -1,0 +1,1 @@
+var a = "src1.js" ;
