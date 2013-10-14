@@ -1,6 +1,10 @@
-nrequire v0.01
+nrequire 
 ========
 
 A Node-style require() for browsers.
+
+### v0.01
+
+
 
 
