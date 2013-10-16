@@ -11,13 +11,13 @@
 	/**
 	 * Returns the current dir name which is the url path of the current page
 	 */
-	var getDirname = function(path){
-		if(!path && global && global.location){
-			path = window.location.href ;
-		}
-		if(path){
-			var lastSlash = path.lastIndexOf("/");
-			return path.substring(0, lastSlash) + "/"; //Not including the last slash
+	var getDirname = function(){
+		if (global && global.location){
+			var href = global.location.href ;
+			if(href){
+				var lastSlash = href.lastIndexOf("/");
+				return href.substring(0, lastSlash) + "/"; //Not including the last slash
+			}
 		}else{
 			// ???
 			return ".";
@@ -47,17 +47,15 @@
 			dirname = getDirname();
 		}
 		var id = _moduleIdResolver(dirname, module);
-		if (id in _cache && _conf["useCache"]){
+		if (id in _cache){
 			//Already in cache
-			return _cache[id].exports;
+			return _cache[id];
 		}
 		
 		if(id in _stack.modNames){
 			//TODO half way loaded module
 			//if(_stack[_stack.length - 1].)
 		}
-		
-		_stack.push({name: id, _dirname: getDirname(id)});
 		
 		//New module to load
 		var script = _ajaxGet(id);//synchronized get
@@ -66,15 +64,8 @@
 		}
 		
 		var exports = _evalText(script);
-		
 		//cache the loaded module
-		var mod = _stack.pop();
-		mod.exports = exports ;
-		if(_conf["useCache"]){
-			_cache[mod.name] = mod ;
-		}
-		//Assert mod.name == id ???
-		
+		_cache[id] = exports ;
 		return exports ;
 	};
 	var _cache = require.cache = {}
@@ -82,23 +73,11 @@
 	
 	_stack.modNames = {};//un-ordered module names that are in _stack
 	
-	_stack.push = function(elem){
-		Array.prototype.push.call(this, elem);
-		this.modNames[elem.name] = true;
-	};
-	
-	_stack.pop = function(){
-		var o = Array.prototype.pop.call(this);
-		delete this.modNames[o.name];
-		return o ;
-	};
-	
 	/**
 	 * Configuration
 	 */
 	var _conf = {
-			"useStrict": true,
-			"useCache": true
+			"useStrict": true
 	};
 	var _config = require.config = function(k, v){
 		if(k && typeof v !== undefined){
@@ -109,7 +88,7 @@
 	
 	/**
 	 * Relative moduleId can start with '.' or '..'
-	 * '.js' at the end is omittable
+	 * No '.js' at the end
 	 */
 	var _moduleIdResolver = require.moduleIdResolver = function(dirname, moduleId){
 		//Relative moduleId can start with '.' or '..'
@@ -155,7 +134,7 @@
 			throw new Error("Evaluation failed: " + e.message);
 		}
 		var _exports = module["exports"] ;
-		if (_exports != null){
+		if (_exports != null && Object.getOwnPropertyNames(_exports).length > 0){
 			return _exports ;
 		}else{
 			return {};

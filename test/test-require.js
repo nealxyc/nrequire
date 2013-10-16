@@ -86,5 +86,43 @@ test.testRequire = function(){
 	assertTrue(tool.isNull(null));
 };
 
+test.testStack = function(){
+	var stack = require.stack;
+	assertNotNull(stack);
+	eq(0, stack.length);
+	stack.push({name: "file1"});
+	eq(1, stack.length);
+	assertTrue(stack.modNames["file1"]);
+	
+	var f = stack.pop();
+	eq("file1", f.name)
+	eq(0, stack.length);
+	assertNull(stack.modNames["file1"]);
+};
+
+test.testCache = function(){
+	require.config("useCache", false);
+	var mod1 = require("./tool.js");
+	assertNotNull(mod1);
+	var mod2 = require("./tool.js");
+	assertNotNull(mod2);
+	//Not the same because cache is diabled, both require calls eval so different object.
+	assertFalse(mod1 === mod2);
+	
+	require.config("useCache", true);
+	var mod1 = require("./tool.js");
+	assertNotNull(mod1);
+	var mod2 = require("./tool.js");
+	assertNotNull(mod2);
+	eq(mod1, mod2);
+};
+
+test.testInnerRequire = function(){
+	var num = require("./dir/num.js");
+	assertEquals(2, num);
+	
+	assertTrue(require("./dir/result.js").result);
+};
+
 //log.writeToBody = true;
 TestRunner.run(test);
