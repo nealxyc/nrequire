@@ -110,10 +110,12 @@
 	/**
 	 * Relative moduleId can start with '.' or '..'
 	 * '.js' at the end is omittable
+	 * @param dirname The current directory. It will be used when moduleId is a relative path.
+	 * @param moduleId The module file path
 	 */
 	var _moduleIdResolver = require.moduleIdResolver = function(dirname, moduleId){
 		//Relative moduleId can start with '.' or '..'
-		// No '.js' at the end
+		// '.js' at the end is omittable
 		if(moduleId){
 			moduleId = moduleId.trim();
 			//TODO Supports backslash(\) as delimiter as well?
@@ -125,19 +127,41 @@
 				//TODO Goes through lib path
 				//moduleId = moduleId;
 			}
-			//Appends '.js' to the end if it moduleId doesn't have it
+			//Appends '.js' to the end if moduleId doesn't have it
 			moduleId += moduleId.lastIndexOf(JS_EXTENSION) != (moduleId.length - JS_EXTENSION.length)? JS_EXTENSION:"" ;
+			
+			//Normalize moduleId
+			terms = moduleId.split("/");
+			var normalizedTerms = [];
+			for(i in terms){
+				var term = terms[i];
+				switch(term){
+					case "..":
+						if(isNull(normalizedTerms.pop())){
+							//TODO exception?
+							//Bad file path
+						}
+					case ".":
+						continue;
+						default:
+							normalizedTerms.push(term);
+				}
+			}
+			moduleId = normalizedTerms.join("/");			
 		}else{
 			// Oct 11, 2013. For now _moduleIdResolver("tool.js") => "tool.js"
 			//moduleId is undefined or ""
-			//TODO throw new Error("No module identifier.");
+			throw new Error("No module identifier.");
 		}
 		return moduleId ;
 	};
 	
-	var _load = require.loadModule = function(moduleId){
+	var _create = require.createModule = function(moduleId){
 		var mod = {
-				_filename: moduleId,
+				//_filename: moduleId,
+				_dirname: getDirname(moduleId),
+				id: moduleId,
+				name: moduleId
 		};
 		
 	};
@@ -167,20 +191,35 @@
 		async = async ? true: false ;
 		
 		var xmlhttp;
-		if (window.XMLHttpRequest){
-			xmlhttp=new XMLHttpRequest();
+		if (global.ActiveXObject){
+			xmlhttp=new global.ActiveXObject("Microsoft.XMLHTTP");
 		}
 		else {
-			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+			xmlhttp=new global.XMLHttpRequest();
 		}
 		var txt = undefined ;
 		xmlhttp.onreadystatechange = function() {
 			if(this.readyState == 4){
 				if(this.status == 200){
 					if(!async){
-						  txt = xmlhttp.responseText;
+						try{
+							txt = xmlhttp.responseText;
+						}catch(e){
+							//
+							txt = "";
+						}
+						  
 					  }else{
-						  if(successFn) successFn(xmlhttp.responseText) ;
+						  if(successFn){
+							  var t = "";
+							  try{
+									t = xmlhttp.responseText;
+								}catch(e){
+									//
+									t = "";
+								}
+								successFn(t) ;
+						  }
 					  }
 				}
 				else{

@@ -9,15 +9,27 @@ var test = new Test();
 test.testModuleIdResovler = function(){
 	var fd = "/";
 	var func = require.moduleIdResolver.bind(require);
-	eq("/./myfile.js", func(fd, "./myfile"));
-	eq("/./myfile.js", func(fd, "./myfile.js"));
+	eq("/myfile.js", func(fd, "./myfile"));
+	eq("/myfile.js", func(fd, "./myfile.js"));
 	
 	fd = "/my/folder/" ;
-	eq("/my/folder/../myfile.js", func(fd, "../myfile.js"));
-	eq("/my/folder/../myfile.js", func(fd, "../myfile"));
+	eq("/my/myfile.js", func(fd, "../myfile.js"));
+	eq("/my/myfile.js", func(fd, "../myfile"));
 	
 	eq("http://www.myserver.com/myfile.js", func(fd, "http://www.myserver.com/myfile.js"));
 	eq("mymodule.js", func(fd, "mymodule"));
+	
+	fd = "http://www.myhost.com/";
+	eq("mymodule.js", func(fd, "mymodule"));//Might change in the future
+	eq("http://www.myhost.com/mymodule.js", func(fd, "./mymodule"));
+	eq("http://www.myhost.com/f/g/h/mymodule.js", func(fd, "./f/g/h/mymodule"));
+	
+	try{
+		func(fd, null);
+		fail("Expect error of no module id found.");
+	}catch(e){
+		assertNotNull(e);
+	}
 };
 
 test.testAjaxGet = function(){
@@ -123,6 +135,15 @@ test.testInnerRequire = function(){
 	
 	assertTrue(require("./dir/result.js").result);
 };
+
+test.testRequireLoop = function(){
+//	var num = require("./dir/require-loop1.js");
+//	assertEquals(1, num);
+};
+
+//test.testFail = function(){
+//	fail("Yea! It failed!");
+//};
 
 //log.writeToBody = true;
 TestRunner.run(test);
