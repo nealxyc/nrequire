@@ -48,7 +48,7 @@ test.testAjaxGet = function(){
 	}, function(){
 		log.log("file not found: src2.js");
 	}));
-
+	
 };
 
 test.testEval = function(){
