@@ -30,7 +30,7 @@
 		}
 		if(path){
 			var lastSlash = path.lastIndexOf("/");
-			return path.substring(0, lastSlash) + "/"; //Not including the last slash
+			return path.substring(0, lastSlash) + "/";
 		}else{
 			// ???
 			return ".";
@@ -39,7 +39,6 @@
 	
 	var JS_EXTENSION = ".js";
 	var require;
-	
 	/**
 	 * 
 	 */
@@ -59,15 +58,18 @@
 		}else{
 			dirname = getDirname();
 		}
-		var id = _moduleIdResolver(dirname, module);
+		var id= _moduleIdResolver(dirname, module);
 		if (id in _cache && _conf["useCache"]){
-			//Already in cache
+            //Already in cache
 			return _cache[id].exports;
 		}
-		
+
+        var module = _create(id);
 		if(id in _stack.modNames){
 			//TODO half way loaded module
 			//if(_stack[_stack.length - 1].)
+            //Return immediately to resolve require loop
+            //
 		}
 		
 		_stack.push({name: id, _dirname: getDirname(id)});
@@ -170,15 +172,14 @@
 	};
 	
 	var _create = require.createModule = function(moduleId){
-		var mod = {
-				//_filename: moduleId,
-				_dirname: getDirname(moduleId),
-				id: moduleId,
-				name: moduleId
+		return {
+            _filename: moduleId,
+			_dirname: getDirname(moduleId),
+			id: moduleId,
+            exports: {}
 		};
-		
 	};
-	
+
 	var _evalText = require.eval = function(text){
 		var module = {"exports": {}};
 		try{
