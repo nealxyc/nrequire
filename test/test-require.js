@@ -102,12 +102,12 @@ test.testStack = function(){
 	var stack = require.stack;
 	assertNotNull(stack);
 	eq(0, stack.length);
-	stack.push({name: "file1"});
+	stack.push({id: "file1"});
 	eq(1, stack.length);
-	assertTrue(stack.modNames["file1"]);
+	eq(0, stack.modNames["file1"]);
 	
 	var f = stack.pop();
-	eq("file1", f.name)
+	eq("file1", f.id)
 	eq(0, stack.length);
 	assertNull(stack.modNames["file1"]);
 };
@@ -136,9 +136,19 @@ test.testInnerRequire = function(){
 	assertTrue(require("./dir/result.js").result);
 };
 
+test.testCreateModule = function(){
+	var mod = require.createModule("/src/folder/file.js");
+	eq("/src/folder/file.js", mod.id);
+	eq("file.js", mod._filename);
+	eq("/src/folder/", mod._dirname);
+	eq({}, mod.exports);
+	eq(4, Object.getOwnPropertyNames(mod).length);
+	
+};
+
 test.testRequireLoop = function(){
-//	var num = require("./dir/require-loop1.js");
-//	assertEquals(1, num);
+	var num = require("./dir/require-loop1.js");
+	assertEquals(1, num);
 };
 
 //test.testFail = function(){

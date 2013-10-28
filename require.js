@@ -42,7 +42,7 @@
 	/**
 	 * 
 	 */
-	var require = function(module){
+	var require = function(moduleId){
 		var _require = require ;
 		/*
 		 * Needs to handle:
@@ -58,7 +58,7 @@
 		}else{
 			dirname = getDirname();
 		}
-		var id= _moduleIdResolver(dirname, module);
+		var id= _moduleIdResolver(dirname, moduleId);
 		if (id in _cache && _conf["useCache"]){
             //Already in cache
 			return _cache[id].exports;
@@ -69,10 +69,10 @@
 			//TODO half way loaded module
 			//if(_stack[_stack.length - 1].)
             //Return immediately to resolve require loop
-            //
+            return _stack[_stack.modNames[id]].exports ;
 		}
 		
-		_stack.push({name: id, _dirname: getDirname(id)});
+		_stack.push(module);
 		
 		//New module to load
 		var script = _ajaxGet(id);//synchronized get
@@ -86,7 +86,7 @@
 		var mod = _stack.pop();
 		mod.exports = exports ;
 		if(_conf["useCache"]){
-			_cache[mod.name] = mod ;
+			_cache[mod.id] = mod ;
 		}
 		//Assert mod.name == id ???
 		
@@ -99,12 +99,12 @@
 	
 	_stack.push = function(elem){
 		Array.prototype.push.call(this, elem);
-		this.modNames[elem.name] = true;
+		this.modNames[elem.id] = this.length - 1;
 	};
 	
 	_stack.pop = function(){
 		var o = Array.prototype.pop.call(this);
-		delete this.modNames[o.name];
+		delete this.modNames[o.id];
 		return o ;
 	};
 	
@@ -172,10 +172,12 @@
 	};
 	
 	var _create = require.createModule = function(moduleId){
+		var dirname = getDirname(moduleId);
+		var filename = moduleId.replace(dirname, "");
 		return {
-            _filename: moduleId,
-			_dirname: getDirname(moduleId),
 			id: moduleId,
+			_dirname: dirname,
+            _filename: filename,
             exports: {}
 		};
 	};
@@ -215,6 +217,7 @@
 		        if(statusText === "404" && notFoundFn)
 		          notFoundFn();
 		    },
+		    //We don't want jQuery to execute the script for us.
 		    dataType: "text"
 		});
 		
@@ -259,7 +262,7 @@
 						  if(notFoundFn) notFoundFn();
 					  }
 				}
-			}
+			}	
 		};
 		xmlhttp.open("GET", resource, async);
 		xmlhttp.send();
