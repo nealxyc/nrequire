@@ -3,7 +3,6 @@
  * @author Neal Xiong	
  */
 
-
 (function(global){
 	/** @private */
 	var isNull = function(obj){
@@ -69,32 +68,40 @@
 			//TODO Re-try other paths?
 		}
 		
-		var exports = _evalText(script);
+		_evalText(script, module);
 		
 		//cache the loaded module
-		var mod = _stack.pop();
-		mod.exports = exports ;
+		var mod = _stack.pop();// mod should pointing to the same object as module
 		if(_conf["useCache"]){
 			_cache[mod.id] = mod ;
 		}
-		//Assert mod.name == id ???
 		
-		return exports ;
+		return mod.exports ;
 	};
 	
 	/**
-	 * @memberOf require
+	 * @private
 	 */
 	var _cache = require.cache = {}
 		, _stack = require.stack = [];
-	
+	/**
+	 * 
+	 * @memberOf _stack
+	 */
 	_stack.modNames = {};//un-ordered module names that are in _stack
-	
+	/**
+	 * 
+	 * @memberOf _stack
+	 */
 	_stack.push = function(elem){
 		Array.prototype.push.call(this, elem);
 		this.modNames[elem.id] = this.length - 1;
 	};
 	
+	/**
+	 * 
+	 * @memberOf _stack
+	 */
 	_stack.pop = function(){
 		var o = Array.prototype.pop.call(this);
 		delete this.modNames[o.id];
@@ -175,24 +182,28 @@
 		};
 	};
 
-	var _evalText = require.eval = function(text){
-		var module = {"exports": {}};
+	/**
+	 * @private
+	 */
+	var _evalText = require.evalScript = function(text, module){
 		try{
 			//TODO more variables? __filename ? __dirname ?
 			text = ( _conf["useStrict"] ? "\"use strict\";": "" ) + text ;
 			var func = new Function("module", "exports", "require", text);
-			func.apply(null, [module, module["exports"], require]);
+			// Within the script 'this' refer to the current module object
+			func.apply(module, [module, module["exports"], require]);
 		}catch(e){
 			//
 //			console.error("" + e);
 			throw new Error("Evaluation failed: " + e.message);
 		}
-		var _exports = module["exports"] ;
-		if (_exports != null){
-			return _exports ;
-		}else{
-			return {};
-		}
+		
+//		var _exports = module["exports"] ;
+//		if (_exports != null){
+//			return _exports ;
+//		}else{
+//			return {};
+//		}
 	};
 	
 	var _ajaxGet = require.ajaxGet = function(resource, async, successFn, notFoundFn){

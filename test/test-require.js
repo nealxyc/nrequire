@@ -62,21 +62,23 @@ test.testAjaxGet = function(){
  */
 test.testEval = function(){
 	var txt = require.ajaxGet("tool.js");
-	var obj = require.eval(txt);
+	var obj = {exports:{}}; 
+	require.evalScript(txt, obj);
 	eq(1, Object.getOwnPropertyNames(obj).length);
-	eq("function", typeof obj["isNull"]);
+	eq("function", typeof obj.exports["isNull"]);
 	
-	assertTrue(obj.isNull(undefined));
+	assertTrue(obj.exports["isNull"](undefined));
 	
 	//test use strict
 	require.config("useStrict", false);
-	obj = require.eval("myName = 'myName';");
+	obj = {exports:{}};
+	require.evalScript("myName = 'myName';", obj);
 	eq("myName", window["myName"]);
 	
 	require.config("useStrict", true);
 	var err;
 	try{
-		obj = require.eval("myName2 = 'myName2';");
+		require.evalScript("myName2 = 'myName2';", obj);
 	}catch(e){
 		err = e;
 	}
