@@ -146,9 +146,23 @@ test.testCreateModule = function(){
 	
 };
 
+var checkjQuery = function(){
+	if(window.jQuery && window.jQuery.ajax){
+		log.log("Using jQuery.ajax() ..");
+	}else{
+		//log.log("Using build-in XMLHttpRequest");
+	}
+};
+checkjQuery();
+
 test.testRequireLoop = function(){
 	var num = require("./dir/require-loop1.js");
 	assertEquals(1, num);
+};
+
+test.testRequireLoop2 = function(){
+	var mod = require("./dir/require-loop3.js");
+	assertEquals(3, mod.number3);
 };
 
 //test.testFail = function(){
