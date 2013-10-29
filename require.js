@@ -1,6 +1,10 @@
 /**
+ * Copyright (c) 2013 Neal Xiong
  * 
- * @author Neal Xiong	
+ * Released under the MIT license
+ * https://github.com/nealxyc/nrequire/blob/master/LICENSE
+ * 
+ * You are free to use this software in any other project (even commercial projects) as long as the copyright header is left intact.
  */
 
 (function(global){
