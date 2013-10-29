@@ -191,6 +191,18 @@ test.testRequireLoop2 = function(){
 	assertEquals(3, mod.number3);
 };
 
+test.testNotFound = function(){
+	var err;
+	try{
+		require("./dir/no-such-file");
+	}catch(e){
+		err = e;
+	}
+	assertNotNull(err);
+	log.log(err.message);
+	assertTrue(err.message.indexOf("Module file is not found") != -1);
+};
+
 //test.testFail = function(){
 //	fail("Yea! It failed!");
 //};

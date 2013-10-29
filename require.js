@@ -24,14 +24,10 @@
 			return ".";
 		}
 	};
-	
+	/** @constant */
 	var JS_EXTENSION = ".js";
 	var require;
-	/**
-	 * 
-	 */
-	var require = function(moduleId){
-		var _require = require ;
+	require = function(moduleId){
 		/*
 		 * Needs to handle:
 		 * 	1. New module to load
@@ -41,12 +37,11 @@
 		 * */
 		var dirname ;
 		if(_stack.length > 0){
-			//TODO not sure if it's correct yet
-			dirname = _stack[_stack.length - 1]._dirname ;
+			dirname = _stack.peek()._dirname ;
 		}else{
 			dirname = getDirname();
 		}
-		var id= _moduleIdResolver(dirname, moduleId);
+		var id = _moduleIdResolver(dirname, moduleId);
 		if (id in _cache && _conf["useCache"]){
             //Already in cache
 			return _cache[id].exports;
@@ -54,8 +49,6 @@
 
         var module = _create(id);
 		if(id in _stack.modNames){
-			//TODO half way loaded module
-			//if(_stack[_stack.length - 1].)
             //Return immediately to resolve require loop
             return _stack[_stack.modNames[id]].exports ;
 		}
@@ -66,6 +59,7 @@
 		var script = _ajaxGet(id);//synchronized get
 		if(isNull(script)){
 			//TODO Re-try other paths?
+			throw Error("Module file is not found: " + id);
 		}
 		
 		_evalText(script, module);
@@ -80,7 +74,7 @@
 	};
 	
 	/**
-	 * @private
+	 * @private @memberOf require
 	 */
 	var _cache = require.cache = {}
 		, _stack = require.stack = [];
@@ -109,26 +103,40 @@
 	};
 	
 	/**
+	 * 
+	 * @memberOf _stack
+	 */
+	_stack.peek = function(){
+		if(this.length == 0){
+			return null ;
+		}
+		return this[this.length - 1];
+	};
+	
+	/**
 	 * Configuration
+	 * @private
+	 * @field
 	 */
 	var _conf = {
 			"useStrict": true,
 			"useCache": true
 	};
-	var _config = require.config = function(k, v){
+	/** @memberOf require */
+	require.config = function(k, v){
 		if(k && typeof v !== undefined){
 			_conf[k] = v ;
 		}
 		return _conf[k];
 	};
-	
 	/**
 	 * Relative moduleId can start with '.' or '..'
 	 * '.js' at the end is omittable
 	 * @param dirname The current directory. It will be used when moduleId is a relative path.
 	 * @param moduleId The module file path
+	 * @memberOf require
 	 */
-	var _moduleIdResolver = require.moduleIdResolver = function(dirname, moduleId){
+	require.moduleIdResolver = function(dirname, moduleId){
 		//Relative moduleId can start with '.' or '..'
 		// '.js' at the end is omittable
 		if(moduleId){
@@ -170,7 +178,9 @@
 		}
 		return moduleId ;
 	};
+	var _moduleIdResolver = require.moduleIdResolver ;
 	
+	/** @memeberOf require */
 	var _create = require.createModule = function(moduleId){
 		var dirname = getDirname(moduleId);
 		var filename = moduleId.replace(dirname, "");
@@ -187,23 +197,15 @@
 	 */
 	var _evalText = require.evalScript = function(text, module){
 		try{
-			//TODO more variables? __filename ? __dirname ?
+			//TODO more variables? 
+			//TODO use local variables to override window, document, etc?
 			text = ( _conf["useStrict"] ? "\"use strict\";": "" ) + text ;
 			var func = new Function("module", "exports", "require", text);
 			// Within the script 'this' refer to the current module object
 			func.apply(module, [module, module["exports"], require]);
 		}catch(e){
-			//
-//			console.error("" + e);
 			throw new Error("Evaluation failed: " + e.message);
 		}
-		
-//		var _exports = module["exports"] ;
-//		if (_exports != null){
-//			return _exports ;
-//		}else{
-//			return {};
-//		}
 	};
 	
 	var _ajaxGet = require.ajaxGet = function(resource, async, successFn, notFoundFn){
