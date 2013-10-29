@@ -6,6 +6,9 @@
 
 var test = new Test();
 
+/**
+ * @memberOf test
+ */
 test.testModuleIdResovler = function(){
 	var fd = "/";
 	var func = require.moduleIdResolver.bind(require);
@@ -32,6 +35,9 @@ test.testModuleIdResovler = function(){
 	}
 };
 
+/**
+ * @memberOf test
+ */
 test.testAjaxGet = function(){
 	
 	//sync get
@@ -51,6 +57,9 @@ test.testAjaxGet = function(){
 	
 };
 
+/**
+ * @memberOf test
+ */
 test.testEval = function(){
 	var txt = require.ajaxGet("tool.js");
 	var obj = require.eval(txt);
@@ -75,6 +84,9 @@ test.testEval = function(){
 	
 };
 
+/**
+ * @memberOf test
+ */
 test.testRequire = function(){
 	var tool = require("./tool.js");
 	assertNotNull(tool);
@@ -97,7 +109,9 @@ test.testRequire = function(){
 	assertNotNull(tool.isNull);
 	assertTrue(tool.isNull(null));
 };
-
+/**
+ * @memberOf test
+ */
 test.testStack = function(){
 	var stack = require.stack;
 	assertNotNull(stack);
@@ -111,7 +125,9 @@ test.testStack = function(){
 	eq(0, stack.length);
 	assertNull(stack.modNames["file1"]);
 };
-
+/**
+ * @memberOf test
+ */
 test.testCache = function(){
 	require.config("useCache", false);
 	var mod1 = require("./tool.js");
@@ -128,14 +144,18 @@ test.testCache = function(){
 	assertNotNull(mod2);
 	eq(mod1, mod2);
 };
-
+/**
+ * @memberOf test
+ */
 test.testInnerRequire = function(){
 	var num = require("./dir/num.js");
 	assertEquals(2, num);
 	
 	assertTrue(require("./dir/result.js").result);
 };
-
+/**
+ * @memberOf test
+ */
 test.testCreateModule = function(){
 	var mod = require.createModule("/src/folder/file.js");
 	eq("/src/folder/file.js", mod.id);
@@ -145,7 +165,9 @@ test.testCreateModule = function(){
 	eq(4, Object.getOwnPropertyNames(mod).length);
 	
 };
-
+/**
+ * @private @function
+ */
 var checkjQuery = function(){
 	if(window.jQuery && window.jQuery.ajax){
 		log.log("Using jQuery.ajax() ..");
@@ -154,7 +176,9 @@ var checkjQuery = function(){
 	}
 };
 checkjQuery();
-
+/**
+ * @memberOf test
+ */
 test.testRequireLoop = function(){
 	var num = require("./dir/require-loop1.js");
 	assertEquals(1, num);
@@ -170,4 +194,9 @@ test.testRequireLoop2 = function(){
 //};
 
 //log.writeToBody = true;
+TestRunner.appenders.push({
+	"append": function(level, msg){
+		document.getElementById("appender").innerHTML += "[" + level.toUpperCase() + "] " + msg + "\n";
+	}
+});
 TestRunner.run(test);
