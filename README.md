@@ -1,7 +1,7 @@
-nrequire v0.2
+nRequire v0.2.0
 ========
 
-A Node-style require() for browsers.
+A NodeJS-style require() for browsers.
 
 ### Usage
 In `hello.js`
@@ -20,8 +20,8 @@ Then in your `index.html`
 	
 ### Change Log
 ***
-#### v0.2
-* Added configuration options 'useCache', ''
+#### v0.2.0
+* Added configuration options 'useCache', 'useStrict'.
 * Detects jQuery and uses jQuery.ajax if found.
 * [CommonJS Module 1.0](http://wiki.commonjs.org/wiki/Modules/1.0) compatible
 * Built-in web server for testing.
