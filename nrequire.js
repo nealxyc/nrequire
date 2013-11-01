@@ -29,6 +29,7 @@
 			return ".";
 		}
 	};
+
 	/** @constant */
 	var JS_EXTENSION = ".js";
 	var require;
@@ -58,21 +59,23 @@
             return _stack[_stack.modNames[id]].exports ;
 		}
 		
-		_stack.push(module);
-		
 		//New module to load
 		var script = _ajaxGet(id);//synchronized get
 		if(isNull(script)){
 			//TODO Re-try other paths?
-			throw Error("Module file is not found: " + id);
+			throw Error("Module file was not found: " + id);
 		}
-		
-		_evalText(script, module);
-		
-		//cache the loaded module
-		var mod = _stack.pop();// mod should pointing to the same object as module
-		if(_conf["useCache"]){
-			_cache[mod.id] = mod ;
+		_stack.push(module);
+		try{
+			_evalText(script, module);
+		}catch(e){
+			throw e;
+		}finally{
+			var mod = _stack.pop();// mod should pointing to the same object as module
+			//cache the loaded module
+			if(_conf["useCache"]){
+				_cache[mod.id] = mod ;
+			}
 		}
 		
 		return mod.exports ;
@@ -209,7 +212,15 @@
 			// Within the script 'this' refer to the current module object
 			func.apply(module, [module, module["exports"], require]);
 		}catch(e){
-			throw new Error("Evaluation failed: " + e.message);
+			// var msg = "Evaluation failed: " + e.message + "\n" 
+			// 		+ "module.id: " + module.id ;
+			// 			// + "Filename: " + module._filename;
+			// if(stackTraceJs){
+			// 	// msg += stackTraceJs({"e":e}).join("\n");
+			// }
+			// var err = new Error();
+			e.message += "\n" + " > from module.id: " + module.id ;
+			throw e;
 		}
 	};
 	

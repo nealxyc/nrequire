@@ -200,7 +200,7 @@ test.testNotFound = function(){
 	}
 	assertNotNull(err);
 	log.log(err.message);
-	assertTrue(err.message.indexOf("Module file is not found") != -1);
+	assertTrue(err.message.indexOf("Module file was not found") != -1);
 };
 
 //test.testFail = function(){

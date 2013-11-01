@@ -1,4 +1,4 @@
-nRequire v0.2.0
+NRequire v0.2.0
 ========
 
 A NodeJS-style require() for browsers.
