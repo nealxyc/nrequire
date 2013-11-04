@@ -9,6 +9,11 @@
  */
 
 (function(global){
+
+	var _require ;
+	if(typeof require !== "undefined"){
+		_require = require ;
+	}
 	/** @private */
 	var isNull = function(obj){
 		return obj == undefined ;
@@ -156,7 +161,7 @@
 			}else{
 				//Absolute path
 				//TODO Goes through lib path
-				//moduleId = moduleId;
+				moduleId = dirname + moduleId;
 			}
 			//Appends '.js' to the end if moduleId doesn't have it
 			moduleId += moduleId.lastIndexOf(JS_EXTENSION) != (moduleId.length - JS_EXTENSION.length)? JS_EXTENSION:"" ;
@@ -291,6 +296,13 @@
 		}
 		return txt ;
 	};
+
+	/** @memberOf require */
+	require.noConflict = function(){
+		var re =require;
+		require = _require ;
+		return re ;
+	}
 	
 	var module;
 	//Exports "require" to global/module
