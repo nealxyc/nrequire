@@ -34,6 +34,25 @@
 			return ".";
 		}
 	};
+	/** Connects two arrays of string. It is different from Array.concat that the last element in arr1 and first element in arr2
+		becomes one element in the new array (by applying (+)).
+		So the length of the new array will be arr1.length + arr2.length - 1 
+		@private */
+	var connect = function(arr1, arr2){
+
+		if(arr1.length == 0){
+			return arr2;
+		}
+		if(arr2.length == 0){
+			return arr1;
+		}
+		arr1 = arr1.concat([]);//Make a copy
+		arr2 = arr2.concat([]);
+		arr1[arr1.length - 1] += arr2[0];
+		arr2.shift();//Shift out the first element
+		return arr1.concat(arr2);
+
+	}
 
 	/** @constant */
 	var JS_EXTENSION = ".js";
@@ -156,18 +175,26 @@
 			moduleId = moduleId.trim();
 			//TODO Supports backslash(\) as delimiter as well?
 			var terms = moduleId.split("/");
-			if(terms[0] == "." || terms[0] == ".."){
-				moduleId = dirname + moduleId;
+			var dirTerms = dirname? dirname.split("/"): [""];
+			if(terms[0] === "." || terms[0] === ".."){
+				terms = connect(dirTerms, terms);
+				// moduleId = dirname + moduleId;
+			}else if(terms[0].indexOf(":") > -1 && terms.length > 1 && terms[1] === ""){
+				// "http://www.example.com/index.js".split("/") --> ["http:", "", "www.example.com", "index.js"]
+				// Absolute path starts with protocol ...
+				// TODO
+			}else if(terms[0] === ""){
+				//TODO Absolute path starts with root "/"
+
 			}else{
-				//Absolute path
+				// Path starts with module name
 				//TODO Goes through lib path
-				moduleId = dirname + moduleId;
+				terms = connect(dirTerms, terms);
+				// moduleId = dirname + moduleId;
 			}
-			//Appends '.js' to the end if moduleId doesn't have it
-			moduleId += moduleId.lastIndexOf(JS_EXTENSION) != (moduleId.length - JS_EXTENSION.length)? JS_EXTENSION:"" ;
 			
 			//Normalize moduleId
-			terms = moduleId.split("/");
+			// terms = moduleId.split("/");
 			var normalizedTerms = [];
 			for(i in terms){
 				var term = terms[i];
@@ -183,7 +210,10 @@
 							normalizedTerms.push(term);
 				}
 			}
-			moduleId = normalizedTerms.join("/");			
+			moduleId = normalizedTerms.join("/");	
+			//Appends '.js' to the end if moduleId doesn't have it
+			moduleId += moduleId.lastIndexOf(JS_EXTENSION) != (moduleId.length - JS_EXTENSION.length)? JS_EXTENSION:"" ;
+					
 		}else{
 			// Oct 11, 2013. For now _moduleIdResolver("tool.js") => "tool.js"
 			//moduleId is undefined or ""
@@ -215,7 +245,7 @@
 			text = ( _conf["useStrict"] ? "\"use strict\";": "" ) + text ;
 			var func = new Function("module", "exports", "require", text);
 			// Within the script 'this' refer to the current module object
-			func.apply(module, [module, module["exports"], require]);
+			func.apply(module.exports, [module, module["exports"], require]);
 		}catch(e){
 			// var msg = "Evaluation failed: " + e.message + "\n" 
 			// 		+ "module.id: " + module.id ;

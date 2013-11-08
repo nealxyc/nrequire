@@ -20,10 +20,11 @@ test.testModuleIdResovler = function(){
 	eq("/my/myfile.js", func(fd, "../myfile"));
 	
 	eq("http://www.myserver.com/myfile.js", func(fd, "http://www.myserver.com/myfile.js"));
-	eq("mymodule.js", func(fd, "mymodule"));
+	
+	eq("/my/folder/mymodule.js", func(fd, "mymodule"));
 	
 	fd = "http://www.myhost.com/";
-	eq("mymodule.js", func(fd, "mymodule"));//Might change in the future
+	eq("http://www.myhost.com/mymodule.js", func(fd, "mymodule"));//Might change in the future
 	eq("http://www.myhost.com/mymodule.js", func(fd, "./mymodule"));
 	eq("http://www.myhost.com/f/g/h/mymodule.js", func(fd, "./f/g/h/mymodule"));
 	
